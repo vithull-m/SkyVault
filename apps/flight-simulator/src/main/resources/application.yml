@@ -1,0 +1,16 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: skyvault-flight-simulator
+
+simulator:
+  backend-url: "http://localhost:8080/api/v1/telemetry/ingest"
+  auth-token: "Bearer DEMO_JWT_TOKEN_HERE"
+  flight-id: "FL-2026-0042"
+  aircraft-id: "b4a1c5d9-7e3f-4a2b-9c8d-1e2f3a4b5c6d"
+  tick-rate-ms: 1000      # Generates telemetry every 1 second (1000 ms)
+  speed-multiplier: 1.0   # Real-time multiplier (e.g. 1.0 = real-time, 2.0 = double speed)
+  max-retry-attempts: 3
+  retry-delay-ms: 2000
