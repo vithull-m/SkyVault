@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # =========================================================================
+  # 1. Database: PostgreSQL 15+
+  # =========================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: skyvault-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-skyvault_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-skyvault_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - skyvault-network
+
+  # =========================================================================
+  # 2. Core Backend: Spring Boot Service
+  # =========================================================================
+  skyvault-backend:
+    build:
+      context: ../apps/backend
+      dockerfile: Dockerfile
+    container_name: skyvault-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-skyvault_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      APP_JWT_SECRET: ${JWT_SECRET:-9a2f8c4e7b1a5d3f8e6c4b2a0f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e}
+    ports:
+      - "8080:8080"
+    volumes:
+      - backend_logs:/app/logs
+    networks:
+      - skyvault-network
+
+  # =========================================================================
+  # 3. AI Service: Python FastAPI Anomaly Engine
+  # =========================================================================
+  skyvault-ai:
+    build:
+      context: ../apps/ai-service
+      dockerfile: Dockerfile
+    container_name: skyvault-ai
+    restart: always
+    environment:
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8082
+      BACKEND_URL: http://skyvault-backend:8080
+    ports:
+      - "8082:8082"
+    volumes:
+      - ai_logs:/app/logs
+    networks:
+      - skyvault-network
+
+  # =========================================================================
+  # 4. Frontend: React Vite SPA + Nginx Reverse Proxy
+  # =========================================================================
+  skyvault-frontend:
+    build:
+      context: ../apps/frontend
+      dockerfile: Dockerfile
+    container_name: skyvault-frontend
+    restart: always
+    depends_on:
+      - skyvault-backend
+    ports:
+      - "80:80"
+      - "3000:80"
+    networks:
+      - skyvault-network
+
+volumes:
+  postgres_data:
+    driver: local
+  backend_logs:
+    driver: local
+  ai_logs:
+    driver: local
+
+networks:
+  skyvault-network:
+    driver: bridge

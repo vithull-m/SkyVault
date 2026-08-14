@@ -1,0 +1,38 @@
+services:
+  # 1. PostgreSQL Database
+  - type: postgres
+    name: skyvault-postgres-db
+    databaseName: skyvault_db
+    user: skyvault_admin
+    plan: free
+
+  # 2. Spring Boot Backend Web Service
+  - type: web
+    name: skyvault-backend
+    env: docker
+    dockerfilePath: ./apps/backend/Dockerfile
+    dockerContext: ./apps/backend
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: skyvault-postgres-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+
+  # 3. Python AI Anomaly Service
+  - type: web
+    name: skyvault-ai-service
+    env: docker
+    dockerfilePath: ./apps/ai-service/Dockerfile
+    dockerContext: ./apps/ai-service
+    plan: free
+
+  # 4. React Frontend Web Service
+  - type: web
+    name: skyvault-frontend
+    env: docker
+    dockerfilePath: ./apps/frontend/Dockerfile
+    dockerContext: ./apps/frontend
+    plan: free
