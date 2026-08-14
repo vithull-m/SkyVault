@@ -1,0 +1,189 @@
+{
+  "info": {
+    "_postman_id": "b968d362-38c5-4cf0-a842-ab2c22ebab01",
+    "name": "SkyVault - AI Flight Recorder & Blockchain API Suite",
+    "description": "Comprehensive Postman API Test Suite covering Authentication, Aircraft Management, Telemetry Ingestion, AI Anomaly Detection, Blockchain Hash-Chain Verification, and Air Safety Investigations.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "User Login (Admin / Pilot / Investigator)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usernameOrEmail\": \"admin_user\",\n  \"password\": \"AdminSecret123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Register User (Admin Restricted)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"investigator_sarah\",\n  \"email\": \"sarah.mitchell@skyvault.aero\",\n  \"password\": \"InvestigatorSecret123!\",\n  \"firstName\": \"Dr. Sarah\",\n  \"lastName\": \"Mitchell\",\n  \"roles\": [\"ROLE_INVESTIGATOR\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Aircraft Fleet Management",
+      "item": [
+        {
+          "name": "Add New Aircraft",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationNumber\": \"N737SV\",\n  \"model\": \"Boeing 737-800\",\n  \"manufacturer\": \"Boeing\",\n  \"airlineName\": \"SkyVault Airways\",\n  \"manufacturingYear\": 2020,\n  \"capacity\": 189,\n  \"engineType\": \"CFM56-7B\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/aircraft",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "aircraft"]
+            }
+          }
+        },
+        {
+          "name": "Get All Aircraft",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/aircraft",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "aircraft"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Telemetry Stream Ingestion",
+      "item": [
+        {
+          "name": "Ingest Telemetry Frame",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flightId\": \"FL-2026-0042\",\n  \"aircraftId\": \"b4a1c5d9-7e3f-4a2b-9c8d-1e2f3a4b5c6d\",\n  \"timestamp\": \"2026-08-14T12:00:00Z\",\n  \"flightPhase\": \"CRUISE\",\n  \"latitude\": 40.6413,\n  \"longitude\": -73.7781,\n  \"altitudeFt\": 33000.0,\n  \"airspeedKts\": 450.0,\n  \"headingDeg\": 130.0,\n  \"verticalSpeedFpm\": 0.0,\n  \"fuelLevelLbs\": 18500.0,\n  \"engineRpm\": 7400.0,\n  \"engineTempC\": 680.0,\n  \"oatC\": -51.0,\n  \"cabinPressurePsi\": 11.2,\n  \"batteryVolts\": 28.2,\n  \"landingGearStatus\": \"RETRACTED\",\n  \"flapsDegrees\": 0.0,\n  \"autopilotEngaged\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/telemetry/ingest",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "telemetry", "ingest"]
+            }
+          }
+        },
+        {
+          "name": "Get Latest Telemetry Frame",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/telemetry/latest/FL-2026-0042",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "telemetry", "latest", "FL-2026-0042"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Blockchain Integrity Verification",
+      "item": [
+        {
+          "name": "Anchor Telemetry Block",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flightId\": \"FL-2026-0042\",\n  \"telemetryId\": 100\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/blockchain/anchor",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "blockchain", "anchor"]
+            }
+          }
+        },
+        {
+          "name": "Verify Entire Flight Chain",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/blockchain/verify/flight/FL-2026-0042",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "blockchain", "verify", "flight", "FL-2026-0042"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. AI Anomaly Detection",
+      "item": [
+        {
+          "name": "Analyze Real-Time Telemetry",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flightId\": \"FL-2026-0042\",\n  \"aircraftId\": \"b4a1c5d9-7e3f-4a2b-9c8d-1e2f3a4b5c6d\",\n  \"timestamp\": \"2026-08-14T12:00:00Z\",\n  \"flightPhase\": \"CRUISE\",\n  \"latitude\": 40.6413,\n  \"longitude\": -73.7781,\n  \"altitudeFt\": 31200.0,\n  \"airspeedKts\": 440.0,\n  \"headingDeg\": 130.0,\n  \"verticalSpeedFpm\": -4200.0,\n  \"fuelLevelLbs\": 16900.0,\n  \"engineRpm\": 7200.0,\n  \"engineTempC\": 680.0,\n  \"oatC\": -51.0,\n  \"cabinPressurePsi\": 11.2,\n  \"batteryVolts\": 28.2\n}"
+            },
+            "url": {
+              "raw": "{{ai_service_url}}/api/v1/ai/analyze",
+              "host": ["{{ai_service_url}}"],
+              "path": ["api", "v1", "ai", "analyze"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
