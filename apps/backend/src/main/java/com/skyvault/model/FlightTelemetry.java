@@ -1,11 +1,16 @@
 package com.skyvault.model;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -15,84 +20,83 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "flight_telemetry", indexes = {
-        @Index(name = "idx_telemetry_flight_id", columnList = "flight_id"),
-        @Index(name = "idx_telemetry_aircraft_id", columnList = "aircraft_id"),
-        @Index(name = "idx_telemetry_flight_time", columnList = "flight_id, timestamp DESC")
+@Document(collection = "flight_telemetry")
+@CompoundIndexes({
+        @CompoundIndex(name = "idx_telemetry_flight_time", def = "{'flight_id': 1, 'timestamp': -1}"),
+        @CompoundIndex(name = "idx_telemetry_aircraft", def = "{'aircraft_id': 1}")
 })
 public class FlightTelemetry {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "telemetry_id")
     private Long id;
 
-    @Column(name = "flight_id", nullable = false, length = 50)
+    @Indexed
+    @Field("flight_id")
     private String flightId;
 
-    @Column(name = "aircraft_id", nullable = false)
+    @Indexed
+    @Field("aircraft_id")
     private UUID aircraftId;
 
-    @Column(name = "timestamp", nullable = false)
+    @Field("timestamp")
     private Instant timestamp;
 
-    @Column(name = "flight_phase", nullable = false, length = 30)
+    @Field("flight_phase")
     private String flightPhase;
 
     // Kinematics & Aerodynamics
-    @Column(name = "latitude", nullable = false)
+    @Field("latitude")
     private Double latitude;
 
-    @Column(name = "longitude", nullable = false)
+    @Field("longitude")
     private Double longitude;
 
-    @Column(name = "altitude_ft", nullable = false)
+    @Field("altitude_ft")
     private Double altitudeFt;
 
-    @Column(name = "airspeed_kts", nullable = false)
+    @Field("airspeed_kts")
     private Double airspeedKts;
 
-    @Column(name = "heading_deg", nullable = false)
+    @Field("heading_deg")
     private Double headingDeg;
 
-    @Column(name = "vertical_speed_fpm", nullable = false)
+    @Field("vertical_speed_fpm")
     private Double verticalSpeedFpm;
 
     // Engine & Propulsion
-    @Column(name = "fuel_level_lbs", nullable = false)
+    @Field("fuel_level_lbs")
     private Double fuelLevelLbs;
 
-    @Column(name = "engine_rpm", nullable = false)
+    @Field("engine_rpm")
     private Double engineRpm;
 
-    @Column(name = "engine_temp_c", nullable = false)
+    @Field("engine_temp_c")
     private Double engineTempC;
 
     // Environment & Systems
-    @Column(name = "oat_c", nullable = false)
+    @Field("oat_c")
     private Double oatC;
 
-    @Column(name = "cabin_pressure_psi", nullable = false)
+    @Field("cabin_pressure_psi")
     private Double cabinPressurePsi;
 
-    @Column(name = "battery_volts", nullable = false)
+    @Field("battery_volts")
     private Double batteryVolts;
 
     // Controls
-    @Column(name = "landing_gear_status", nullable = false, length = 20)
+    @Field("landing_gear_status")
     private String landingGearStatus;
 
-    @Column(name = "flaps_degrees", nullable = false)
+    @Field("flaps_degrees")
     private Double flapsDegrees;
 
-    @Column(name = "autopilot_engaged", nullable = false)
+    @Field("autopilot_engaged")
     private Boolean autopilotEngaged;
 
-    @Column(name = "hash_signature", length = 64)
+    @Field("hash_signature")
     private String hashSignature;
 
-    @CreationTimestamp
-    @Column(name = "recorded_at", updatable = false)
+    @CreatedDate
+    @Field("recorded_at")
     private LocalDateTime recordedAt;
 }

@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -86,6 +87,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = new User();
+        user.setId(UUID.randomUUID());
         user.setUsername(registerRequestDto.getUsername());
         user.setEmail(registerRequestDto.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequestDto.getPassword()));

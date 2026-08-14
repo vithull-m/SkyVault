@@ -19,7 +19,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -53,7 +52,6 @@ public class InvestigationServiceImpl implements InvestigationService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public PageResponseDto<TelemetryResponseDto> searchInvestigations(InvestigationSearchRequestDto searchDto) {
         log.info("🔎 [INVESTIGATION SEARCH] Querying flights - FlightID: {}, AircraftID: {}, IncidentType: {}",
                 searchDto.getFlightId(), searchDto.getAircraftId(), searchDto.getIncidentType());
@@ -73,7 +71,6 @@ public class InvestigationServiceImpl implements InvestigationService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public InvestigationDetailResponseDto getInvestigationDetails(String flightId) {
         log.info("📋 [INVESTIGATION DETAILS] Fetching audit file for Flight ID: {}", flightId);
 
@@ -113,7 +110,6 @@ public class InvestigationServiceImpl implements InvestigationService {
     }
 
     @Override
-    @Transactional
     public InvestigationNote saveInvestigationNote(String flightId, SaveNoteRequestDto requestDto, String investigatorUsername) {
         log.info("📝 [SAVE NOTE] Investigator '{}' adding note to Flight ID: {}", investigatorUsername, flightId);
 
@@ -121,6 +117,7 @@ public class InvestigationServiceImpl implements InvestigationService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "username", investigatorUsername));
 
         InvestigationNote note = new InvestigationNote();
+        note.setId(UUID.randomUUID());
         note.setFlightId(flightId);
         note.setInvestigatorId(investigator.getId());
         note.setInvestigatorName(investigator.getFirstName() + " " + investigator.getLastName());
@@ -134,7 +131,6 @@ public class InvestigationServiceImpl implements InvestigationService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public InvestigationReportResponseDto generateReport(String flightId) {
         log.info("📄 [GENERATE REPORT] Compiling official safety investigation report for Flight: {}", flightId);
 

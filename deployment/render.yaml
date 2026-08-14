@@ -1,12 +1,7 @@
 services:
-  # 1. PostgreSQL Database
-  - type: postgres
-    name: skyvault-postgres-db
-    databaseName: skyvault_db
-    user: skyvault_admin
-    plan: free
-
-  # 2. Spring Boot Backend Web Service
+  # 1. Spring Boot Backend Web Service
+  # NOTE: MongoDB is not a managed Render service. Use MongoDB Atlas free tier.
+  # Set SPRING_DATA_MONGODB_URI to your Atlas connection string.
   - type: web
     name: skyvault-backend
     env: docker
@@ -14,14 +9,12 @@ services:
     dockerContext: ./apps/backend
     plan: free
     envVars:
-      - key: SPRING_DATASOURCE_URL
-        fromDatabase:
-          name: skyvault-postgres-db
-          property: connectionString
+      - key: SPRING_DATA_MONGODB_URI
+        sync: false   # Set manually in Render dashboard to your MongoDB Atlas URI
       - key: JWT_SECRET
         generateValue: true
 
-  # 3. Python AI Anomaly Service
+  # 2. Python AI Anomaly Service
   - type: web
     name: skyvault-ai-service
     env: docker
@@ -29,7 +22,7 @@ services:
     dockerContext: ./apps/ai-service
     plan: free
 
-  # 4. React Frontend Web Service
+  # 3. React Frontend Web Service
   - type: web
     name: skyvault-frontend
     env: docker

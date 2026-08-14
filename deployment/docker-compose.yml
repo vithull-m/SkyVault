@@ -2,22 +2,20 @@ version: '3.8'
 
 services:
   # =========================================================================
-  # 1. Database: PostgreSQL 15+
+  # 1. Database: MongoDB 7.0
   # =========================================================================
-  postgres:
-    image: postgres:15-alpine
-    container_name: skyvault-postgres
+  mongodb:
+    image: mongo:7.0
+    container_name: skyvault-mongodb
     restart: always
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-skyvault_db}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-skyvault_db}
     ports:
-      - "5432:5432"
+      - "27017:27017"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mongo_data:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-skyvault_db}"]
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -34,13 +32,11 @@ services:
     container_name: skyvault-backend
     restart: always
     depends_on:
-      postgres:
+      mongodb:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-skyvault_db}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-postgrespassword}
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/${MONGO_DB:-skyvault_db}
+      SPRING_DATA_MONGODB_AUTO_INDEX_CREATION: "true"
       APP_JWT_SECRET: ${JWT_SECRET:-9a2f8c4e7b1a5d3f8e6c4b2a0f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e}
     ports:
       - "8080:8080"
@@ -87,7 +83,7 @@ services:
       - skyvault-network
 
 volumes:
-  postgres_data:
+  mongo_data:
     driver: local
   backend_logs:
     driver: local

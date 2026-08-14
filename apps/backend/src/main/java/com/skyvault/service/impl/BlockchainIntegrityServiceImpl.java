@@ -8,6 +8,7 @@ import com.skyvault.model.FlightTelemetry;
 import com.skyvault.repository.BlockchainLedgerRepository;
 import com.skyvault.repository.TelemetryRepository;
 import com.skyvault.service.BlockchainIntegrityService;
+import com.skyvault.service.SequenceGeneratorService;
 import com.skyvault.util.CryptoHashUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -16,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -28,17 +28,21 @@ import java.util.stream.Collectors;
 @Service
 public class BlockchainIntegrityServiceImpl implements BlockchainIntegrityService {
 
+    private static final String BLOCK_SEQ = "blockchain_block_sequence";
+
     private final BlockchainLedgerRepository ledgerRepository;
     private final TelemetryRepository telemetryRepository;
+    private final SequenceGeneratorService sequenceGeneratorService;
 
     public BlockchainIntegrityServiceImpl(BlockchainLedgerRepository ledgerRepository,
-                                           TelemetryRepository telemetryRepository) {
+                                           TelemetryRepository telemetryRepository,
+                                           SequenceGeneratorService sequenceGeneratorService) {
         this.ledgerRepository = ledgerRepository;
         this.telemetryRepository = telemetryRepository;
+        this.sequenceGeneratorService = sequenceGeneratorService;
     }
 
     @Override
-    @Transactional
     public BlockResponseDto anchorRecord(AnchorBlockRequestDto requestDto) {
         log.info("⛓️ [BLOCKCHAIN ANCHOR] Initiating block creation for Telemetry ID: {} (Flight: {})",
                 requestDto.getTelemetryId(), requestDto.getFlightId());
@@ -52,7 +56,7 @@ public class BlockchainIntegrityServiceImpl implements BlockchainIntegrityServic
             );
         }
 
-        // 2. Fetch target telemetry row from PostgreSQL
+        // 2. Fetch target telemetry record from MongoDB
         FlightTelemetry telemetry = telemetryRepository.findById(requestDto.getTelemetryId())
                 .orElseThrow(() -> new ResourceNotFoundException("FlightTelemetry", "id", requestDto.getTelemetryId()));
 
@@ -71,8 +75,9 @@ public class BlockchainIntegrityServiceImpl implements BlockchainIntegrityServic
                 nextIndex, telemetry.getFlightId(), telemetry.getId(), recordHash, previousHash, now.toString());
         String currentHash = CryptoHashUtils.applySha256(blockHeaderData);
 
-        // 6. Persist new block to DB
+        // 6. Persist new block to MongoDB
         BlockchainBlock block = new BlockchainBlock();
+        block.setId(sequenceGeneratorService.generateSequence(BLOCK_SEQ));
         block.setBlockIndex(nextIndex);
         block.setFlightId(telemetry.getFlightId());
         block.setTelemetryId(telemetry.getId());
@@ -90,7 +95,6 @@ public class BlockchainIntegrityServiceImpl implements BlockchainIntegrityServic
     }
 
     @Override
-    @Transactional(readOnly = true)
     public RecordVerificationResponseDto verifyRecord(Long telemetryId) {
         log.info("🔍 [VERIFY RECORD] Request received for Telemetry ID: {}", telemetryId);
 
@@ -134,7 +138,6 @@ public class BlockchainIntegrityServiceImpl implements BlockchainIntegrityServic
     }
 
     @Override
-    @Transactional(readOnly = true)
     public FlightChainVerificationResponseDto verifyFlightChain(String flightId) {
         log.info("🔗 [VERIFY CHAIN] Auditing complete cryptographic hash chain for Flight ID: {}", flightId);
 
@@ -157,7 +160,7 @@ public class BlockchainIntegrityServiceImpl implements BlockchainIntegrityServic
             BlockchainBlock currentBlock = chain.get(i);
             auditLogs.add(String.format("Auditing Block #%d (Telemetry #%d)...", currentBlock.getBlockIndex(), currentBlock.getTelemetryId()));
 
-            // Step 1: Verify PostgreSQL Telemetry Row Data Intactness
+            // Step 1: Verify MongoDB Telemetry Record Intactness
             Optional<FlightTelemetry> telemetryOpt = telemetryRepository.findById(currentBlock.getTelemetryId());
             if (telemetryOpt.isEmpty()) {
                 auditLogs.add(String.format("🚨 CRITICAL: Telemetry ID #%d missing from database!", currentBlock.getTelemetryId()));
@@ -215,7 +218,6 @@ public class BlockchainIntegrityServiceImpl implements BlockchainIntegrityServic
     }
 
     @Override
-    @Transactional(readOnly = true)
     public PageResponseDto<BlockResponseDto> getVerificationHistory(String flightId, int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("blockIndex").ascending());
         Page<BlockchainBlock> page = ledgerRepository.findByFlightId(flightId, pageable);

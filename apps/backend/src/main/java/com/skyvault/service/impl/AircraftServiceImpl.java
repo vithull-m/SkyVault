@@ -9,7 +9,6 @@ import com.skyvault.repository.AircraftRepository;
 import com.skyvault.service.AircraftService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,7 +24,6 @@ public class AircraftServiceImpl implements AircraftService {
     }
 
     @Override
-    @Transactional
     public AircraftResponseDto createAircraft(AircraftRequestDto dto) {
         // Enforce uniqueness constraint check on registration number
         if (aircraftRepository.existsByRegistrationNumber(dto.getRegistrationNumber())) {
@@ -36,19 +34,18 @@ public class AircraftServiceImpl implements AircraftService {
         }
 
         Aircraft aircraft = mapToEntity(dto);
+        aircraft.setId(UUID.randomUUID());
         Aircraft savedAircraft = aircraftRepository.save(aircraft);
         return mapToResponseDto(savedAircraft);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<AircraftResponseDto> getAllAircraft() {
         List<Aircraft> list = aircraftRepository.findAll();
         return list.stream().map(this::mapToResponseDto).collect(Collectors.toList());
     }
 
     @Override
-    @Transactional(readOnly = true)
     public AircraftResponseDto getAircraftById(UUID id) {
         Aircraft aircraft = aircraftRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Aircraft", "id", id));
@@ -56,7 +53,6 @@ public class AircraftServiceImpl implements AircraftService {
     }
 
     @Override
-    @Transactional
     public AircraftResponseDto updateAircraft(UUID id, AircraftRequestDto dto) {
         Aircraft existingAircraft = aircraftRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Aircraft", "id", id));
@@ -84,7 +80,6 @@ public class AircraftServiceImpl implements AircraftService {
     }
 
     @Override
-    @Transactional
     public void deleteAircraft(UUID id) {
         Aircraft aircraft = aircraftRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Aircraft", "id", id));

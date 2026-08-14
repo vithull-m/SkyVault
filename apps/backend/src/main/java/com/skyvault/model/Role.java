@@ -1,28 +1,28 @@
 package com.skyvault.model;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "roles")
+@Document(collection = "roles")
 public class Role {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "role_id")
     private Integer id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role_name", length = 50, nullable = false, unique = true)
+    @Indexed(unique = true)
+    @Field("role_name")
     private RoleName name;
 
-    @Column(name = "description")
+    @Field("description")
     private String description;
 }

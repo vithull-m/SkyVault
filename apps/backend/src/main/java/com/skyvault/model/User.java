@@ -1,12 +1,16 @@
 package com.skyvault.model;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -17,46 +21,41 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "users")
+@Document(collection = "users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "user_id", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "username", nullable = false, unique = true, length = 50)
+    @Indexed(unique = true)
+    @Field("username")
     private String username;
 
-    @Column(name = "email", nullable = false, unique = true, length = 255)
+    @Indexed(unique = true)
+    @Field("email")
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    @Field("password_hash")
     private String password;
 
-    @Column(name = "first_name", nullable = false, length = 100)
+    @Field("first_name")
     private String firstName;
 
-    @Column(name = "last_name", nullable = false, length = 100)
+    @Field("last_name")
     private String lastName;
 
-    @Column(name = "is_active", nullable = false)
+    @Field("is_active")
     private boolean active = true;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "role_id")
-    )
+    @DBRef
+    @Field("roles")
     private Set<Role> roles = new HashSet<>();
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @CreatedDate
+    @Field("created_at")
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
+    @LastModifiedDate
+    @Field("updated_at")
     private LocalDateTime updatedAt;
 }

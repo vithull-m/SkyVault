@@ -1,12 +1,15 @@
 package com.skyvault.model;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,45 +18,42 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "aircraft")
+@Document(collection = "aircraft")
 public class Aircraft {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "aircraft_id", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "registration_number", nullable = false, unique = true, length = 20)
+    @Indexed(unique = true)
+    @Field("registration_number")
     private String registrationNumber;
 
-    @Column(name = "model", nullable = false, length = 100)
+    @Field("model")
     private String model;
 
-    @Column(name = "manufacturer", nullable = false, length = 100)
+    @Field("manufacturer")
     private String manufacturer;
 
-    @Column(name = "airline_name", nullable = false, length = 100)
+    @Field("airline_name")
     private String airlineName;
 
-    @Column(name = "manufacturing_year", nullable = false)
+    @Field("manufacturing_year")
     private Integer manufacturingYear;
 
-    @Column(name = "capacity", nullable = false)
+    @Field("capacity")
     private Integer capacity;
 
-    @Column(name = "engine_type", nullable = false, length = 50)
+    @Field("engine_type")
     private String engineType;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 30)
+    @Field("status")
     private AircraftStatus status = AircraftStatus.ACTIVE;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @CreatedDate
+    @Field("created_at")
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
+    @LastModifiedDate
+    @Field("updated_at")
     private LocalDateTime updatedAt;
 }

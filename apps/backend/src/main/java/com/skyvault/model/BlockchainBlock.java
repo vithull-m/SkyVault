@@ -1,10 +1,15 @@
 package com.skyvault.model;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.Instant;
 
@@ -12,40 +17,38 @@ import java.time.Instant;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "blockchain_ledger_blocks", indexes = {
-        @Index(name = "idx_ledger_flight_id", columnList = "flight_id"),
-        @Index(name = "idx_ledger_telemetry_id", columnList = "telemetry_id"),
-        @Index(name = "idx_ledger_flight_block", columnList = "flight_id, block_index ASC")
+@Document(collection = "blockchain_ledger_blocks")
+@CompoundIndexes({
+        @CompoundIndex(name = "idx_ledger_flight_block", def = "{'flight_id': 1, 'block_index': 1}")
 })
 public class BlockchainBlock {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "block_id")
     private Long id;
 
-    @Column(name = "block_index", nullable = false)
+    @Field("block_index")
     private Long blockIndex;
 
-    @Column(name = "flight_id", nullable = false, length = 50)
+    @Indexed
+    @Field("flight_id")
     private String flightId;
 
-    @Column(name = "telemetry_id", nullable = false)
+    @Indexed
+    @Field("telemetry_id")
     private Long telemetryId;
 
-    @Column(name = "record_hash", nullable = false, length = 64)
+    @Field("record_hash")
     private String recordHash;
 
-    @Column(name = "previous_hash", nullable = false, length = 64)
+    @Field("previous_hash")
     private String previousHash;
 
-    @Column(name = "current_hash", nullable = false, length = 64)
+    @Field("current_hash")
     private String currentHash;
 
-    @Column(name = "timestamp", nullable = false)
+    @Field("timestamp")
     private Instant timestamp;
 
-    @Column(name = "verification_status", nullable = false, length = 30)
+    @Field("verification_status")
     private String verificationStatus = "VALIDATED";
 }
