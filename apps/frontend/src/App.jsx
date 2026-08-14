@@ -16,6 +16,12 @@ import UserProfile from './pages/UserProfile';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 
+// Investigation Module Specific Pages
+import InvestigationDashboard from './pages/InvestigationDashboard';
+import InvestigationDetail from './pages/InvestigationDetail';
+import FlightReplayPage from './pages/FlightReplayPage';
+import InvestigationReportPage from './pages/InvestigationReportPage';
+
 function App() {
   return (
     <AuthProvider>
@@ -31,7 +37,11 @@ function App() {
               <Route path="/live-telemetry" element={<LiveTelemetry />} />
               <Route path="/ai-alerts" element={<AiAlerts />} />
               <Route path="/blockchain" element={<BlockchainVerification />} />
-              <Route path="/investigations" element={<InvestigationReports />} />
+              <Route path="/investigations" element={<InvestigationDashboard />} />
+              <Route path="/investigation/detail/:flightId" element={<InvestigationDetail />} />
+              <Route path="/investigation/replay/:flightId" element={<FlightReplayPage />} />
+              <Route path="/investigation/report/:flightId" element={<InvestigationReportPage />} />
+              <Route path="/reports-summary" element={<InvestigationReports />} />
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
