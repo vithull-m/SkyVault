@@ -34,7 +34,7 @@ public class FlightTelemetry {
     @Field("flight_id")
     private String flightId;
 
-    @Indexed
+   
     @Field("aircraft_id")
     private UUID aircraftId;
 
