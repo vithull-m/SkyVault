@@ -1,5 +1,4 @@
-import React from 'react';
-import { Plane, Radio, CheckCircle, ShieldAlert, LinkCheck, Clock } from 'lucide-react';
+import { Plane, Radio, CheckCircle, ShieldAlert, Link, Clock } from 'lucide-react';
 import StatCard from '../components/common/StatCard';
 import Badge from '../components/common/Badge';
 
@@ -9,7 +8,7 @@ const DashboardOverview = () => {
     { title: 'Active Live Flights', value: '4', icon: Radio, trend: '+1', color: '#10b981' },
     { title: 'Completed Sessions', value: '1,420', icon: CheckCircle, trend: '+34', color: '#3b82f6' },
     { title: 'AI Anomaly Alerts', value: '2', icon: ShieldAlert, trend: '-1', color: '#f43f5e' },
-    { title: 'Blockchain Integrity', value: '100% Synced', icon: LinkCheck, trend: 'VERIFIED', color: '#a855f7' },
+    { title: 'Blockchain Integrity', value: '100% Synced', icon: Link, trend: 'VERIFIED', color: '#a855f7' },
   ];
 
   const recentFlights = [
